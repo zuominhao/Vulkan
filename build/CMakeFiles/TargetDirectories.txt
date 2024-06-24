@@ -1,3 +1,0 @@
-D:/work/C++/Vulkan/build/CMakeFiles/MyExecutable.dir
-D:/work/C++/Vulkan/build/CMakeFiles/ALL_BUILD.dir
-D:/work/C++/Vulkan/build/CMakeFiles/ZERO_CHECK.dir
