@@ -1,16 +1,27 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="C:\Users\JR1\minhao\C++\vk1\src\main.cpp">
+    <ClCompile Include="D:\work\C++\Vulkan\src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\JR1\minhao\C++\vk1\CMakeLists.txt" />
+    <ClInclude Include="D:\work\C++\Vulkan\src\e3d.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\work\C++\Vulkan\src\vk_model.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <CustomBuild Include="D:\work\C++\Vulkan\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{03AB82FD-FA3E-3916-906D-B11B63995F4B}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{8613B9F1-4A77-3A66-B978-DC06DAEDDC87}</UniqueIdentifier>
+      <UniqueIdentifier>{7FEEA07E-2471-31E8-8C04-E0B811220A1C}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

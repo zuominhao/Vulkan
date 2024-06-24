@@ -1,3 +1,3 @@
-C:/Users/JR1/minhao/C++/vk1/build/CMakeFiles/MyExecutable.dir
-C:/Users/JR1/minhao/C++/vk1/build/CMakeFiles/ALL_BUILD.dir
-C:/Users/JR1/minhao/C++/vk1/build/CMakeFiles/ZERO_CHECK.dir
+D:/work/C++/Vulkan/build/CMakeFiles/MyExecutable.dir
+D:/work/C++/Vulkan/build/CMakeFiles/ALL_BUILD.dir
+D:/work/C++/Vulkan/build/CMakeFiles/ZERO_CHECK.dir
