@@ -1,8 +1,8 @@
-#include "./e3d/e3d.hpp"
-#include<iostream>
+#include <e3d/e3d.hpp>
+#include <iostream>
 
-void printc(){
-std::cout<<"111111111111111111111111111"<<std::endl;
+void printc() {
+  std::cout << "111111111111111111111111111" << std::endl;
 }
 
 int main() {
@@ -11,7 +11,7 @@ int main() {
 
   try {
     engine.Run();
-  } catch (const std::exception& e) {
+  } catch (const std::exception &e) {
     std::cerr << e.what() << std::endl;
     return EXIT_FAILURE;
   }
