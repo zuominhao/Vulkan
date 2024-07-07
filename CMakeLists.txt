@@ -13,5 +13,9 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+if(WIN32)
+    add_compile_options(/utf-8 /wd4828)
+endif()
+
 add_subdirectory(src/e3d)
 add_subdirectory(src/game)

@@ -8,30 +8,30 @@
 #include <imgui_impl_sdl2.h>
 #include <imgui_impl_vulkan.h>
 
-#include <vulkan/vulkan.h>  
 #include <Eigen/Core>
 #include <Eigen/Dense>
+#include <vulkan/vulkan.h>
 
+#include <Eigen/Dense>
+#include <array>
 #include <chrono>
+#include <cstddef>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
-#include <cstdint>
-#include <cstddef>
-#include <functional>
-#include <stdexcept>
-#include <vector>
-#include <string>
-#include <array>
-#include <unordered_map>
-#include <iostream>
 #include <fstream>
+#include <functional>
+#include <iostream>
 #include <set>
-#include <Eigen/Dense>
+#include <stdexcept>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace e3d {
 
 namespace helper {
-inline static std::vector<char> ReadFile(const std::string& filename) {
+inline static std::vector<char> ReadFile(const std::string &filename) {
   std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
   if (!file.is_open()) {
@@ -49,11 +49,11 @@ inline static std::vector<char> ReadFile(const std::string& filename) {
   return buffer;
 }
 
-VkShaderModule CreateShaderModule(VkDevice device, const std::vector<char>& code) {
+VkShaderModule CreateShaderModule(VkDevice device, const std::vector<char> &code) {
   VkShaderModuleCreateInfo createInfo{};
   createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
   createInfo.codeSize = code.size();
-  createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+  createInfo.pCode = reinterpret_cast<const uint32_t *>(code.data());
 
   VkShaderModule shaderModule;
   if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
@@ -64,7 +64,7 @@ VkShaderModule CreateShaderModule(VkDevice device, const std::vector<char>& code
 }
 
 inline static std::string ToStr(VkResult err) {
-  static const std::unordered_map<VkResult, const char*> vkResultStrings = {
+  static const std::unordered_map<VkResult, const char *> vkResultStrings = {
       {VK_SUCCESS, "VK_SUCCESS"},
       {VK_NOT_READY, "VK_NOT_READY"},
       {VK_TIMEOUT, "VK_TIMEOUT"},
@@ -105,19 +105,21 @@ inline static std::string ToStr(VkResult err) {
   return "Unknown VkResult";
 }
 
-inline static bool IsExtensionAvailable(const std::vector<VkExtensionProperties>& properties, const char* extension) {
-  for (const VkExtensionProperties& p : properties)
-    if (strcmp(p.extensionName, extension) == 0) return true;
+inline static bool IsExtensionAvailable(const std::vector<VkExtensionProperties> &properties, const char *extension) {
+  for (const VkExtensionProperties &p : properties)
+    if (strcmp(p.extensionName, extension) == 0)
+      return true;
   return false;
 }
 
-inline static bool IsLayerAvailable(const std::vector<VkLayerProperties>& properties, const char* layer) {
-  for (const VkLayerProperties& p : properties)
-    if (strcmp(p.layerName, layer) == 0) return true;
+inline static bool IsLayerAvailable(const std::vector<VkLayerProperties> &properties, const char *layer) {
+  for (const VkLayerProperties &p : properties)
+    if (strcmp(p.layerName, layer) == 0)
+      return true;
   return false;
 }
 
-inline static Eigen::Matrix4f LookAt(const Eigen::Vector3f& eye, const Eigen::Vector3f& center, const Eigen::Vector3f& up) {
+inline static Eigen::Matrix4f LookAt(const Eigen::Vector3f &eye, const Eigen::Vector3f &center, const Eigen::Vector3f &up) {
   Eigen::Vector3f f = (center - eye).normalized();
   Eigen::Vector3f u = up.normalized();
   Eigen::Vector3f s = f.cross(u).normalized();
@@ -155,14 +157,14 @@ inline static Eigen::Matrix4f Perspective(float fov, float aspectRatio, float zN
 
 std::array<float, 4> ColorU32ToF32(uint32_t color) {
   std::array<float, 4> rgba;
-  rgba[0] = ((color >> 24) & 0xFF) / 255.0f;  // 红通道
-  rgba[1] = ((color >> 16) & 0xFF) / 255.0f;  // 绿通道
-  rgba[2] = ((color >> 8) & 0xFF) / 255.0f;   // 蓝通道
-  rgba[3] = ((color >> 0) & 0xFF) / 255.0f;   // Alpha 通道
+  rgba[0] = ((color >> 24) & 0xFF) / 255.0f; // 红通道
+  rgba[1] = ((color >> 16) & 0xFF) / 255.0f; // 绿通道
+  rgba[2] = ((color >> 8) & 0xFF) / 255.0f;  // 蓝通道
+  rgba[3] = ((color >> 0) & 0xFF) / 255.0f;  // Alpha 通道
   return rgba;
 }
 
-}  // namespace helper
+} // namespace helper
 
 struct Vertex {
   Eigen::Vector2f pos;
@@ -209,23 +211,23 @@ struct Frame {
 };
 
 class Pipeline {
- public:
+public:
   virtual ~Pipeline() {}
 };
 
 class Renderer {
- public:
+public:
   virtual ~Renderer() {}
   virtual void Render(VkCommandBuffer command_buffer, uint32_t image_index) = 0;
 };
 
 class Window {
- public:
-  SDL_Window* sdl_window{};
-  std::vector<const char*> vulkan_extensions;
+public:
+  SDL_Window *sdl_window{};
+  std::vector<const char *> vulkan_extensions;
 
- public:
-  Window(const std::string& title, int width, int height) {
+public:
+  Window(const std::string &title, int width, int height) {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
       throw std::runtime_error("SDL_Init failed, " + std::string(SDL_GetError()));
     }
@@ -233,15 +235,16 @@ class Window {
     SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
 
     SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-    SDL_Window* window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, window_flags);
-    if (!window) throw std::runtime_error("SDL_CreateWindow failed, " + std::string(SDL_GetError()));
+    SDL_Window *window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, window_flags);
+    if (!window)
+      throw std::runtime_error("SDL_CreateWindow failed, " + std::string(SDL_GetError()));
 
     sdl_window = window;
 
     // 获取支持的vulkan扩展
     uint32_t extensions_count = 0;
     SDL_Vulkan_GetInstanceExtensions(sdl_window, &extensions_count, nullptr);
-    std::vector<const char*> extensions(extensions_count);
+    std::vector<const char *> extensions(extensions_count);
     SDL_Vulkan_GetInstanceExtensions(sdl_window, &extensions_count, extensions.data());
     vulkan_extensions = std::move(extensions);
   }
@@ -256,7 +259,7 @@ class Window {
   }
 
   using Event = SDL_Event;
-  bool PollEvent(Event* event) { return SDL_PollEvent(event); }
+  bool PollEvent(Event *event) { return SDL_PollEvent(event); }
 
   std::pair<int, int> GetSize() {
     int width, height;
@@ -295,8 +298,8 @@ struct GpuContext {
 };
 
 class Gpu {
-  Window* window{};
-  VkAllocationCallbacks* allocator{};
+  Window *window{};
+  VkAllocationCallbacks *allocator{};
   VkDebugReportCallbackEXT debug_report_callback{};
   bool enable_debug_report{true};
   bool enable_fifo{true};
@@ -307,8 +310,8 @@ class Gpu {
 
   std::shared_ptr<GpuContext> context_;
 
- public:
-  Gpu(Window* _window) : window(_window) {
+public:
+  Gpu(Window *_window) : window(_window) {
     context_ = std::make_shared<GpuContext>();
     context_->extent = {800, 600};
 
@@ -351,7 +354,8 @@ class Gpu {
 
     VkCommandPool command_pool{};
     auto err = vkCreateCommandPool(device, &pool_info, nullptr, &command_pool);
-    if (err != VK_SUCCESS) throw std::runtime_error("Failed to create command pool");
+    if (err != VK_SUCCESS)
+      throw std::runtime_error("Failed to create command pool");
 
     return command_pool;
   }
@@ -368,7 +372,8 @@ class Gpu {
 
     VkCommandBuffer command_buffer{};
     auto err = vkAllocateCommandBuffers(device, &alloc_info, &command_buffer);
-    if (err != VK_SUCCESS) throw std::runtime_error("Failed to allocate command buffers");
+    if (err != VK_SUCCESS)
+      throw std::runtime_error("Failed to allocate command buffers");
 
     return command_buffer;
   }
@@ -388,27 +393,30 @@ class Gpu {
     framebufferInfo.height = extent.height;
     framebufferInfo.layers = 1;
     VkFramebuffer framebuffer{};
-    if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffer) != VK_SUCCESS) throw std::runtime_error("failed to create framebuffer!");
+    if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffer) != VK_SUCCESS)
+      throw std::runtime_error("failed to create framebuffer!");
 
     return framebuffer;
   }
 
-  void Render(std::function<void(VkCommandBuffer, uint32_t)>&& render_func) {
-    const auto& instance = context_->instance;
-    const auto& device = context_->device;
-    const auto& swapchain = context_->swapchain;
-    const auto& graphics_queue = context_->graphics_queue;
-    const auto& present_queue = context_->present_queue;
-    const auto& in_flight_fence = context_->in_flight_fence;
-    const auto& image_available_semaphore = context_->image_available_semaphore;
-    const auto& render_finished_semaphore = context_->render_finished_semaphore;
-    const auto& command_pool = context_->command_pool;
+  void Render(std::function<void(VkCommandBuffer, uint32_t)> &&render_func) {
+    const auto &instance = context_->instance;
+    const auto &device = context_->device;
+    const auto &swapchain = context_->swapchain;
+    const auto &graphics_queue = context_->graphics_queue;
+    const auto &present_queue = context_->present_queue;
+    const auto &in_flight_fence = context_->in_flight_fence;
+    const auto &image_available_semaphore = context_->image_available_semaphore;
+    const auto &render_finished_semaphore = context_->render_finished_semaphore;
+    const auto &command_pool = context_->command_pool;
 
     // 等待CPU同步
     VkResult err = vkWaitForFences(device, 1, &in_flight_fence, VK_TRUE, UINT64_MAX);
-    if (err != VK_SUCCESS) throw std::runtime_error("vkWaitForFences failed " + helper::ToStr(err));
+    if (err != VK_SUCCESS)
+      throw std::runtime_error("vkWaitForFences failed " + helper::ToStr(err));
     err = vkResetFences(device, 1, &in_flight_fence);
-    if (err != VK_SUCCESS) throw std::runtime_error("vkResetFences failed " + helper::ToStr(err));
+    if (err != VK_SUCCESS)
+      throw std::runtime_error("vkResetFences failed " + helper::ToStr(err));
 
     // 请求帧
     uint32_t image_index{};
@@ -420,20 +428,23 @@ class Gpu {
       throw std::runtime_error("vkAcquireNextImageKHR failed " + helper::ToStr(err));
     }
 
-    const auto& command_buffer = context_->command_buffers[image_index];
+    const auto &command_buffer = context_->command_buffers[image_index];
 
     // 开始录制指令
     VkCommandBufferBeginInfo cmd_info{};
     cmd_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     err = vkBeginCommandBuffer(command_buffer, &cmd_info);
-    if (err != VK_SUCCESS) throw std::runtime_error("vkBeginCommandBuffer failed " + helper::ToStr(err));
+    if (err != VK_SUCCESS)
+      throw std::runtime_error("vkBeginCommandBuffer failed " + helper::ToStr(err));
 
     // 录制指令
-    if (render_func) render_func(command_buffer, image_index);
+    if (render_func)
+      render_func(command_buffer, image_index);
 
     // 结束录制指令
     err = vkEndCommandBuffer(command_buffer);
-    if (err != VK_SUCCESS) throw std::runtime_error("vkEndCommandBuffer failed " + helper::ToStr(err));
+    if (err != VK_SUCCESS)
+      throw std::runtime_error("vkEndCommandBuffer failed " + helper::ToStr(err));
 
     // 提交渲染
     VkSubmitInfo submitInfo{};
@@ -471,8 +482,8 @@ class Gpu {
     vkQueuePresentKHR(present_queue, &presentInfo);
   }
 
-  void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
-    const auto& device = context_->device;
+  void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &bufferMemory) {
+    const auto &device = context_->device;
 
     VkBufferCreateInfo bufferInfo{};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -500,9 +511,9 @@ class Gpu {
   }
 
   void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
-    auto& device = context_->device;
-    auto& commandPool = context_->command_pool;
-    auto& graphicsQueue = context_->graphics_queue;
+    auto &device = context_->device;
+    auto &commandPool = context_->command_pool;
+    auto &graphicsQueue = context_->graphics_queue;
 
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -536,9 +547,9 @@ class Gpu {
     vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
   }
 
- private:  // Setup
+private: // Setup
   static VkBool32 debug_report(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location,
-                               int32_t messageCode, const char* pLayerPrefix, const char* pMessage, void* pUserData) {
+                               int32_t messageCode, const char *pLayerPrefix, const char *pMessage, void *pUserData) {
     std::cerr << "Debug Report: " << pMessage << std::endl;
     return VK_FALSE;
   }
@@ -549,7 +560,8 @@ class Gpu {
     vkEnumerateInstanceExtensionProperties(nullptr, &extension_count, nullptr);
     std::vector<VkExtensionProperties> available_extensions(extension_count);
     VkResult err = vkEnumerateInstanceExtensionProperties(nullptr, &extension_count, available_extensions.data());
-    if (err != VK_SUCCESS) std::runtime_error("vkEnumerateInstanceExtensionProperties failed " + helper::ToStr(err));
+    if (err != VK_SUCCESS)
+      std::runtime_error("vkEnumerateInstanceExtensionProperties failed " + helper::ToStr(err));
 
     // 列出可用的层
     uint32_t layer_count;
@@ -558,8 +570,8 @@ class Gpu {
     vkEnumerateInstanceLayerProperties(&layer_count, available_layers.data());
 
     // 选择需要的层和扩展
-    std::vector<char*> extensions{"VK_KHR_surface", "VK_KHR_win32_surface"};
-    std::vector<const char*> layers;
+    std::vector<char *> extensions{"VK_KHR_surface", "VK_KHR_win32_surface"};
+    std::vector<const char *> layers;
     // 添加调试扩展
     if (enable_debug_report) {
       bool has_debug_report_ext = helper::IsExtensionAvailable(available_extensions, VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
@@ -585,7 +597,8 @@ class Gpu {
     create_info.ppEnabledLayerNames = layers.data();
     VkInstance instance{};
     err = vkCreateInstance(&create_info, allocator, &instance);
-    if (err != VK_SUCCESS) throw std::runtime_error("vkCreateInstance failed " + helper::ToStr(err));
+    if (err != VK_SUCCESS)
+      throw std::runtime_error("vkCreateInstance failed " + helper::ToStr(err));
 
     // // set debug report callback
     // if (enable_debug_report) {
@@ -614,23 +627,27 @@ class Gpu {
 
     uint32_t gpu_count;
     VkResult err = vkEnumeratePhysicalDevices(instance, &gpu_count, nullptr);
-    if (err != VK_SUCCESS) throw std::runtime_error("vkEnumeratePhysicalDevices failed " + helper::ToStr(err));
-    if (gpu_count <= 0) throw std::runtime_error("No GPU found");
+    if (err != VK_SUCCESS)
+      throw std::runtime_error("vkEnumeratePhysicalDevices failed " + helper::ToStr(err));
+    if (gpu_count <= 0)
+      throw std::runtime_error("No GPU found");
 
     std::vector<VkPhysicalDevice> gpus(gpu_count);
     err = vkEnumeratePhysicalDevices(instance, &gpu_count, gpus.data());
-    if (err != VK_SUCCESS) throw std::runtime_error("vkEnumeratePhysicalDevices failed " + helper::ToStr(err));
+    if (err != VK_SUCCESS)
+      throw std::runtime_error("vkEnumeratePhysicalDevices failed " + helper::ToStr(err));
 
     // perferring discrete gpu
     VkPhysicalDevice physical_device{};
-    for (VkPhysicalDevice& device : gpus) {
+    for (VkPhysicalDevice &device : gpus) {
       VkPhysicalDeviceProperties properties;
       vkGetPhysicalDeviceProperties(device, &properties);
       if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
         physical_device = device;
       }
     }
-    if (physical_device == VK_NULL_HANDLE) physical_device = gpus[0];
+    if (physical_device == VK_NULL_HANDLE)
+      physical_device = gpus[0];
 
     context_->physical_device = physical_device;
   }
@@ -639,7 +656,7 @@ class Gpu {
     auto surface = context_->surface;
     auto physical_device = context_->physical_device;
 
-    const std::vector<const char*> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+    const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
     auto [graphics_family_index, present_family_index] = FindQueueFamilies(physical_device, surface);
 
@@ -695,20 +712,22 @@ class Gpu {
     // Check for WSI support
     VkBool32 res;
     vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, 0, surface, &res);
-    if (res != VK_TRUE) throw std::runtime_error("Error: No WSI support on physical device");
+    if (res != VK_TRUE)
+      throw std::runtime_error("Error: No WSI support on physical device");
 
     // Select Surface Format
     VkSurfaceFormatKHR surface_format{};
     {
       uint32_t format_count;
       vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &format_count, nullptr);
-      if (format_count == 0) throw std::runtime_error("Error: No surface formats available");
+      if (format_count == 0)
+        throw std::runtime_error("Error: No surface formats available");
 
       std::vector<VkSurfaceFormatKHR> formats(format_count);
       vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &format_count, formats.data());
 
       bool found = false;
-      for (const auto& format : formats) {
+      for (const auto &format : formats) {
         if (format.format == VK_FORMAT_B8G8R8A8_UNORM && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
           surface_format = format;
           found = true;
@@ -722,7 +741,7 @@ class Gpu {
     }
 
     // Select Present Mode
-    VkPresentModeKHR present_mode = VK_PRESENT_MODE_FIFO_KHR;  // Default present mode
+    VkPresentModeKHR present_mode = VK_PRESENT_MODE_FIFO_KHR; // Default present mode
     {
       uint32_t present_mode_count;
       vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &present_mode_count, nullptr);
@@ -732,7 +751,7 @@ class Gpu {
       std::vector<VkPresentModeKHR> present_modes(present_mode_count);
       vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &present_mode_count, present_modes.data());
 
-      for (const auto& mode : present_modes) {
+      for (const auto &mode : present_modes) {
         if (mode == VK_PRESENT_MODE_MAILBOX_KHR) {
           present_mode = mode;
           break;
@@ -748,7 +767,8 @@ class Gpu {
       VkSurfaceCapabilitiesKHR capabilities;
       vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface, &capabilities);
 
-      if (capabilities.currentExtent.width != UINT_MAX) extent = capabilities.currentExtent;
+      if (capabilities.currentExtent.width != UINT_MAX)
+        extent = capabilities.currentExtent;
 
       image_count = capabilities.minImageCount + 1;
       if (capabilities.maxImageCount > 0 && image_count > capabilities.maxImageCount) {
@@ -777,7 +797,8 @@ class Gpu {
       swapchain_info.oldSwapchain = VK_NULL_HANDLE;
 
       VkResult err = vkCreateSwapchainKHR(device, &swapchain_info, nullptr, &swapchain);
-      if (err != VK_SUCCESS) throw std::runtime_error("Failed to create swap chain");
+      if (err != VK_SUCCESS)
+        throw std::runtime_error("Failed to create swap chain");
     }
 
     // Get SwapChain Images
@@ -810,7 +831,8 @@ class Gpu {
         view_info.subresourceRange.layerCount = 1;
 
         VkResult err = vkCreateImageView(device, &view_info, nullptr, &swapchain_image_views[i]);
-        if (err != VK_SUCCESS) throw std::runtime_error("Failed to create image view");
+        if (err != VK_SUCCESS)
+          throw std::runtime_error("Failed to create image view");
       }
     }
 
@@ -830,23 +852,26 @@ class Gpu {
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
     VkFence in_flight_fence;
     auto err = vkCreateFence(device, &fenceInfo, nullptr, &in_flight_fence);
-    if (err != VK_SUCCESS) throw std::runtime_error("Failed to create fence");
+    if (err != VK_SUCCESS)
+      throw std::runtime_error("Failed to create fence");
 
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
     VkSemaphore image_available_semaphore;
     err = vkCreateSemaphore(device, &semaphoreInfo, nullptr, &image_available_semaphore);
-    if (err != VK_SUCCESS) throw std::runtime_error("Failed to create semaphore");
+    if (err != VK_SUCCESS)
+      throw std::runtime_error("Failed to create semaphore");
     VkSemaphore render_finished_semaphore;
     err = vkCreateSemaphore(device, &semaphoreInfo, nullptr, &render_finished_semaphore);
-    if (err != VK_SUCCESS) throw std::runtime_error("Failed to create semaphore");
+    if (err != VK_SUCCESS)
+      throw std::runtime_error("Failed to create semaphore");
 
     context_->in_flight_fence = in_flight_fence;
     context_->image_available_semaphore = image_available_semaphore;
     context_->render_finished_semaphore = render_finished_semaphore;
   }
 
- private:
+private:
   std::pair<uint32_t, uint32_t> FindQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface) {
     uint32_t graphicsFamily{UINT32_MAX};
     uint32_t presentFamily{UINT32_MAX};
@@ -858,7 +883,7 @@ class Gpu {
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
     int i = 0;
-    for (const auto& queueFamily : queueFamilies) {
+    for (const auto &queueFamily : queueFamilies) {
       if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
         graphicsFamily = i;
       }
@@ -881,7 +906,7 @@ class Gpu {
   }
 
   uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
-    auto& physicalDevice = context_->physical_device;
+    auto &physicalDevice = context_->physical_device;
 
     VkPhysicalDeviceMemoryProperties memProperties;
     vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
@@ -901,13 +926,13 @@ class PointsPipeline : public Pipeline {};
 class LinesPipeline : public Pipeline {};
 
 class TrianglesPipeline : public Pipeline {
- public:
+public:
   VkPipelineLayout pipeline_layout;
   VkPipeline pipeline;
 
   TrianglesPipeline(VkDevice device, VkRenderPass render_pass, VkDescriptorSetLayout descriptor_set_layout) {
-    auto vertShaderCode = helper::ReadFile("shaders/base.vert.spv");
-    auto fragShaderCode = helper::ReadFile("shaders/base.frag.spv");
+    auto vertShaderCode = helper::ReadFile("base.vert.spv");
+    auto fragShaderCode = helper::ReadFile("base.frag.spv");
 
     VkShaderModule vertShaderModule = helper::CreateShaderModule(device, vertShaderCode);
     VkShaderModule fragShaderModule = helper::CreateShaderModule(device, fragShaderCode);
@@ -1021,7 +1046,7 @@ class TrianglesPipeline : public Pipeline {
 class SceneRenderer : public Renderer {
   std::shared_ptr<Gpu> gpu_;
 
- public:
+public:
   VkDevice device{};
   uint32_t width{};
   uint32_t height{};
@@ -1036,7 +1061,7 @@ class SceneRenderer : public Renderer {
   VkDescriptorSetLayout descriptor_set_layout{};
   std::vector<VkBuffer> uniformBuffers;
   std::vector<VkDeviceMemory> uniformBuffersMemory;
-  std::vector<void*> uniformBuffersMapped;
+  std::vector<void *> uniformBuffersMapped;
   std::vector<VkDescriptorSet> descriptor_sets;
 
   // pipelines
@@ -1056,7 +1081,8 @@ class SceneRenderer : public Renderer {
     image_count = gpu_->image_count();
 
     CreateRenderPass();
-    for (int i = 0; i < image_count; i++) framebuffers.push_back(gpu_->CreateFramebuffer(render_pass, i));
+    for (int i = 0; i < image_count; i++)
+      framebuffers.push_back(gpu_->CreateFramebuffer(render_pass, i));
 
     // Uniform
     CreateDescriptorPool();
@@ -1074,8 +1100,8 @@ class SceneRenderer : public Renderer {
   ~SceneRenderer() {}
 
   virtual void Render(VkCommandBuffer command_buffer, uint32_t image_index) override {
-    const auto& framebuffer = framebuffers[image_index];
-    const auto& descriptor_set = descriptor_sets[image_index];  // ubo
+    const auto &framebuffer = framebuffers[image_index];
+    const auto &descriptor_set = descriptor_sets[image_index]; // ubo
 
     auto color = helper::ColorU32ToF32(0xF3F5FAFF);
     VkClearValue clearColor{};
@@ -1112,7 +1138,7 @@ class SceneRenderer : public Renderer {
     vkCmdEndRenderPass(command_buffer);
   }
 
- private:
+private:
   void CreateUniformBuffers() {
     VkDeviceSize bufferSize = sizeof(Uniform);
 
@@ -1164,7 +1190,7 @@ class SceneRenderer : public Renderer {
     gpu_->CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                        stagingBuffer, stagingBufferMemory);
 
-    void* data;
+    void *data;
     vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
     memcpy(data, vertices.data(), (size_t)bufferSize);
     vkUnmapMemory(device, stagingBufferMemory);
@@ -1186,7 +1212,7 @@ class SceneRenderer : public Renderer {
     gpu_->CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                        stagingBuffer, stagingBufferMemory);
 
-    void* data;
+    void *data;
     vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
     memcpy(data, indices.data(), (size_t)bufferSize);
     vkUnmapMemory(device, stagingBufferMemory);
@@ -1319,21 +1345,21 @@ class SceneRenderer : public Renderer {
 };
 
 class UiRenderer : public Renderer {
- public:
+public:
   UiRenderer() {}
   ~UiRenderer() {}
   virtual void Render(VkCommandBuffer command_buffer, uint32_t image_index) override {}
 };
 
 class Engine {
-  Window* window_{};
+  Window *window_{};
   std::shared_ptr<Gpu> gpu_{};
-  SceneRenderer* scene_renderer_{};
-  UiRenderer* ui_renderer_{};
+  SceneRenderer *scene_renderer_{};
+  UiRenderer *ui_renderer_{};
 
   std::function<void(void)> user_render_func;
 
- public:
+public:
   Engine() {
     window_ = new Window("e3d", 1280, 720);
     gpu_ = std::make_shared<Gpu>(window_);
@@ -1359,7 +1385,7 @@ class Engine {
     }
   }
 
-  void SetUserRenderFunction(std::function<void(void)>&& func) { user_render_func = func; }
+  void SetUserRenderFunction(std::function<void(void)> &&func) { user_render_func = func; }
 };
 
-}  // namespace e3d
+} // namespace e3d

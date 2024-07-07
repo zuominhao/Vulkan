@@ -1,20 +1,9 @@
-#include <e3d/e3d.hpp>
+#include <e3d/e3d.h>
+
 #include <iostream>
 
-void printc() {
-  std::cout << "111111111111111111111111111" << std::endl;
-}
-
 int main() {
-  printc();
-  e3d::Engine engine;
-
-  try {
-    engine.Run();
-  } catch (const std::exception &e) {
-    std::cerr << e.what() << std::endl;
-    return EXIT_FAILURE;
-  }
-
+  e3d::Engine engine("game", 1280, 720);
+  engine.run();
   return EXIT_SUCCESS;
 }
