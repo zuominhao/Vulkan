@@ -3,15 +3,12 @@
 #define SDL_MAIN_HANDLED
 #include <SDL.h>
 #include <SDL_vulkan.h>
-
 #include <imgui.h>
 #include <imgui_impl_sdl2.h>
 #include <imgui_impl_vulkan.h>
-
-#include <Eigen/Core>
-#include <Eigen/Dense>
 #include <vulkan/vulkan.h>
 
+#include <Eigen/Core>
 #include <Eigen/Dense>
 #include <array>
 #include <chrono>
@@ -157,14 +154,14 @@ inline static Eigen::Matrix4f Perspective(float fov, float aspectRatio, float zN
 
 std::array<float, 4> ColorU32ToF32(uint32_t color) {
   std::array<float, 4> rgba;
-  rgba[0] = ((color >> 24) & 0xFF) / 255.0f; // 红通道
-  rgba[1] = ((color >> 16) & 0xFF) / 255.0f; // 绿通道
-  rgba[2] = ((color >> 8) & 0xFF) / 255.0f;  // 蓝通道
-  rgba[3] = ((color >> 0) & 0xFF) / 255.0f;  // Alpha 通道
+  rgba[0] = ((color >> 24) & 0xFF) / 255.0f;  // 红通道
+  rgba[1] = ((color >> 16) & 0xFF) / 255.0f;  // 绿通道
+  rgba[2] = ((color >> 8) & 0xFF) / 255.0f;   // 蓝通道
+  rgba[3] = ((color >> 0) & 0xFF) / 255.0f;   // Alpha 通道
   return rgba;
 }
 
-} // namespace helper
+}  // namespace helper
 
 struct Vertex {
   Eigen::Vector2f pos;
@@ -211,22 +208,22 @@ struct Frame {
 };
 
 class Pipeline {
-public:
+ public:
   virtual ~Pipeline() {}
 };
 
 class Renderer {
-public:
+ public:
   virtual ~Renderer() {}
   virtual void Render(VkCommandBuffer command_buffer, uint32_t image_index) = 0;
 };
 
 class Window {
-public:
+ public:
   SDL_Window *sdl_window{};
   std::vector<const char *> vulkan_extensions;
 
-public:
+ public:
   Window(const std::string &title, int width, int height) {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
       throw std::runtime_error("SDL_Init failed, " + std::string(SDL_GetError()));
@@ -310,7 +307,7 @@ class Gpu {
 
   std::shared_ptr<GpuContext> context_;
 
-public:
+ public:
   Gpu(Window *_window) : window(_window) {
     context_ = std::make_shared<GpuContext>();
     context_->extent = {800, 600};
@@ -547,7 +544,7 @@ public:
     vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
   }
 
-private: // Setup
+ private:  // Setup
   static VkBool32 debug_report(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location,
                                int32_t messageCode, const char *pLayerPrefix, const char *pMessage, void *pUserData) {
     std::cerr << "Debug Report: " << pMessage << std::endl;
@@ -741,7 +738,7 @@ private: // Setup
     }
 
     // Select Present Mode
-    VkPresentModeKHR present_mode = VK_PRESENT_MODE_FIFO_KHR; // Default present mode
+    VkPresentModeKHR present_mode = VK_PRESENT_MODE_FIFO_KHR;  // Default present mode
     {
       uint32_t present_mode_count;
       vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &present_mode_count, nullptr);
@@ -871,7 +868,7 @@ private: // Setup
     context_->render_finished_semaphore = render_finished_semaphore;
   }
 
-private:
+ private:
   std::pair<uint32_t, uint32_t> FindQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface) {
     uint32_t graphicsFamily{UINT32_MAX};
     uint32_t presentFamily{UINT32_MAX};
@@ -926,7 +923,7 @@ class PointsPipeline : public Pipeline {};
 class LinesPipeline : public Pipeline {};
 
 class TrianglesPipeline : public Pipeline {
-public:
+ public:
   VkPipelineLayout pipeline_layout;
   VkPipeline pipeline;
 
@@ -1046,7 +1043,7 @@ public:
 class SceneRenderer : public Renderer {
   std::shared_ptr<Gpu> gpu_;
 
-public:
+ public:
   VkDevice device{};
   uint32_t width{};
   uint32_t height{};
@@ -1101,7 +1098,7 @@ public:
 
   virtual void Render(VkCommandBuffer command_buffer, uint32_t image_index) override {
     const auto &framebuffer = framebuffers[image_index];
-    const auto &descriptor_set = descriptor_sets[image_index]; // ubo
+    const auto &descriptor_set = descriptor_sets[image_index];  // ubo
 
     auto color = helper::ColorU32ToF32(0xF3F5FAFF);
     VkClearValue clearColor{};
@@ -1138,7 +1135,7 @@ public:
     vkCmdEndRenderPass(command_buffer);
   }
 
-private:
+ private:
   void CreateUniformBuffers() {
     VkDeviceSize bufferSize = sizeof(Uniform);
 
@@ -1345,7 +1342,7 @@ private:
 };
 
 class UiRenderer : public Renderer {
-public:
+ public:
   UiRenderer() {}
   ~UiRenderer() {}
   virtual void Render(VkCommandBuffer command_buffer, uint32_t image_index) override {}
@@ -1359,7 +1356,7 @@ class Engine {
 
   std::function<void(void)> user_render_func;
 
-public:
+ public:
   Engine() {
     window_ = new Window("e3d", 1280, 720);
     gpu_ = std::make_shared<Gpu>(window_);
@@ -1388,4 +1385,4 @@ public:
   void SetUserRenderFunction(std::function<void(void)> &&func) { user_render_func = func; }
 };
 
-} // namespace e3d
+}  // namespace e3d

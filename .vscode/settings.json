@@ -96,6 +96,7 @@
     "valarray": "cpp",
     "variant": "cpp",
     "queue": "cpp",
-    "dense": "cpp"
+    "dense": "cpp",
+    "hash_map": "cpp"
   }
 }

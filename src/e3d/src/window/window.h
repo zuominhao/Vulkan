@@ -1,7 +1,5 @@
-#include <memory>
-#include <string>
-#define SDL_MAIN_HANDLED
-#include <SDL.h>
+#pragma once
+#include "../sdl2/sdlModule.h"
 namespace e3d {
 
 class Window {
