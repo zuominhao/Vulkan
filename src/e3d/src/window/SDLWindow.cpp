@@ -1,5 +1,5 @@
 #include "SDLWindow.h"
-
+namespace e3d {
 SDLWindow::SDLWindow(const std::string& title, uint32_t width, uint32_t height) : window_(nullptr), should_close_(false) {
   // 初始化 SDL 库，启用视频、定时器和游戏控制器子系统
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
@@ -27,12 +27,15 @@ SDLWindow::SDLWindow(const std::string& title, uint32_t width, uint32_t height) 
 
 SDLWindow::~SDLWindow() {}
 
-bool SDLWindow::pollEvent() {
-  while (SDL_PollEvent(&event_)) {
-    if (event_.type == SDL_QUIT) {
+bool SDLWindow::pollEvent(WindowEvent event) {
+  SDL_Event sdlevent;
+  while (SDL_PollEvent(&sdlevent)) {
+    if (sdlevent.type == SDL_QUIT) {
       should_close_ = true;
-    } else if (event_.type == SDL_WINDOWEVENT && event_.window.event == SDL_WINDOWEVENT_CLOSE) {
+    } else if (sdlevent.type == SDL_WINDOWEVENT && sdlevent.window.event == SDL_WINDOWEVENT_CLOSE) {
       should_close_ = true;
+    }else if (sdlevent.type == SDL_KEYDOWN){
+      
     }
   }
 
@@ -42,3 +45,4 @@ bool SDLWindow::pollEvent() {
 auto createWindow(const std::string& title, uint32_t width, uint32_t height) -> std::shared_ptr<IWindow> {
   return std::make_shared<SDLWindow>(title, width, height);
 };
+}  // namespace e3d
