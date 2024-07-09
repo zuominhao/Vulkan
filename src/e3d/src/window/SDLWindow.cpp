@@ -39,6 +39,6 @@ bool SDLWindow::pollEvent() {
   return !should_close_;
 }
 
-std::shared_ptr<IWindow> createWindow(const std::string& title, uint32_t width, uint32_t height) {
+auto createWindow(const std::string& title, uint32_t width, uint32_t height) -> std::shared_ptr<IWindow> {
   return std::make_shared<SDLWindow>(title, width, height);
 };

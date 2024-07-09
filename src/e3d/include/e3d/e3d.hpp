@@ -28,6 +28,8 @@
 namespace e3d {
 
 namespace helper {
+
+// 读取二进制文件并将其内容存储在 std::vector<char> 中。
 inline static std::vector<char> ReadFile(const std::string &filename) {
   std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
@@ -46,6 +48,7 @@ inline static std::vector<char> ReadFile(const std::string &filename) {
   return buffer;
 }
 
+// 从着色器代码创建一个 Vulkan 着色器模块
 VkShaderModule CreateShaderModule(VkDevice device, const std::vector<char> &code) {
   VkShaderModuleCreateInfo createInfo{};
   createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -60,6 +63,7 @@ VkShaderModule CreateShaderModule(VkDevice device, const std::vector<char> &code
   return shaderModule;
 }
 
+// 将 Vulkan 错误码转换为字符串表示。
 inline static std::string ToStr(VkResult err) {
   static const std::unordered_map<VkResult, const char *> vkResultStrings = {
       {VK_SUCCESS, "VK_SUCCESS"},
@@ -102,6 +106,7 @@ inline static std::string ToStr(VkResult err) {
   return "Unknown VkResult";
 }
 
+// 检查指定的 Vulkan 扩展是否可用。
 inline static bool IsExtensionAvailable(const std::vector<VkExtensionProperties> &properties, const char *extension) {
   for (const VkExtensionProperties &p : properties)
     if (strcmp(p.extensionName, extension) == 0)
@@ -109,6 +114,7 @@ inline static bool IsExtensionAvailable(const std::vector<VkExtensionProperties>
   return false;
 }
 
+// 检查指定的 Vulkan 层是否可用。
 inline static bool IsLayerAvailable(const std::vector<VkLayerProperties> &properties, const char *layer) {
   for (const VkLayerProperties &p : properties)
     if (strcmp(p.layerName, layer) == 0)
@@ -116,6 +122,7 @@ inline static bool IsLayerAvailable(const std::vector<VkLayerProperties> &proper
   return false;
 }
 
+// 计算视图矩阵，用于将场景从世界坐标转换为观察坐标。
 inline static Eigen::Matrix4f LookAt(const Eigen::Vector3f &eye, const Eigen::Vector3f &center, const Eigen::Vector3f &up) {
   Eigen::Vector3f f = (center - eye).normalized();
   Eigen::Vector3f u = up.normalized();
@@ -139,6 +146,7 @@ inline static Eigen::Matrix4f LookAt(const Eigen::Vector3f &eye, const Eigen::Ve
   return view;
 }
 
+// 计算透视投影矩阵，用于将场景从观察坐标转换为裁剪坐标。
 inline static Eigen::Matrix4f Perspective(float fov, float aspectRatio, float zNear, float zFar) {
   float tanHalfFov = tan(fov / 2.0f);
 
@@ -152,6 +160,7 @@ inline static Eigen::Matrix4f Perspective(float fov, float aspectRatio, float zN
   return proj;
 }
 
+// 将 32 位整数颜色值转换为 4 个浮点数表示的 RGBA 颜色。
 std::array<float, 4> ColorU32ToF32(uint32_t color) {
   std::array<float, 4> rgba;
   rgba[0] = ((color >> 24) & 0xFF) / 255.0f;  // 红通道
@@ -163,6 +172,7 @@ std::array<float, 4> ColorU32ToF32(uint32_t color) {
 
 }  // namespace helper
 
+// 两个成员变量：顶点位置和颜色
 struct Vertex {
   Eigen::Vector2f pos;
   Eigen::Vector3f color;
@@ -188,30 +198,36 @@ struct Vertex {
   }
 };
 
+// 用于存储统一变量数据，包含三个4x4矩阵：模型矩阵、试图矩阵、投影矩阵
 struct Uniform {
   alignas(16) Eigen::Matrix4f model;
   alignas(16) Eigen::Matrix4f view;
   alignas(16) Eigen::Matrix4f proj;
 };
 
+// 存储顶点数据，每个顶点包含位置和颜色。
 const std::vector<Vertex> vertices = {{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
                                       {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
                                       {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
                                       {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}};
 
+// 存储索引数据，用于绘制三角形。
 const std::vector<uint16_t> indices = {0, 1, 2, 2, 3, 0};
 
+// 包含了Vulkan帧相关的资源：
 struct Frame {
-  VkFence fence;
-  VkCommandPool command_pool;
-  VkCommandBuffer command_buffer;
+  VkFence fence;                   // 同步对象，用于等待GPU完成操作。
+  VkCommandPool command_pool;      // 命令池，用于分配命令缓冲区。
+  VkCommandBuffer command_buffer;  // 命令缓冲区，用于记录绘制命令。
 };
 
+// 虚基类，表示渲染管道
 class Pipeline {
  public:
   virtual ~Pipeline() {}
 };
 
+// 虚基类，表示渲染器
 class Renderer {
  public:
   virtual ~Renderer() {}
@@ -267,31 +283,32 @@ class Window {
   uint32_t GetWindowId() { return SDL_GetWindowID(sdl_window); }
 };
 
+// GpuContext结构体包含了一个Vulkan图形应用所需的所有主要上下文信息和资源。
 struct GpuContext {
-  VkExtent2D extent;
-  VkInstance instance{};
-  VkSurfaceKHR surface{};
-  VkSurfaceFormatKHR surface_format{};
-  VkPhysicalDevice physical_device{};
-  VkDevice device{};
-  uint32_t graphics_family_index;
-  VkQueue graphics_queue{};
-  uint32_t present_family_index;
-  VkQueue present_queue{};
-  VkPresentModeKHR present_mode{};
+  VkExtent2D extent;                    // 窗口的尺寸，宽度和高度。
+  VkInstance instance{};                // Vulkan实例，用于初始化Vulkan并与平台进行交互。
+  VkSurfaceKHR surface{};               // 渲染表面，用于表示可以进行渲染的窗口或屏幕区域。
+  VkSurfaceFormatKHR surface_format{};  // 表面格式，定义了颜色格式和颜色空间。
+  VkPhysicalDevice physical_device{};   // 物理设备，代表系统中的一个Vulkan兼容的GPU。
+  VkDevice device{};                    // 逻辑设备，与物理设备交互并管理其资源。
+  uint32_t graphics_family_index;       // 图形队列族的索引，用于提交绘图命令。
+  VkQueue graphics_queue{};             // 图形队列，用于执行绘图命令。
+  uint32_t present_family_index;        // 呈现队列族的索引，用于提交呈现命令。
+  VkQueue present_queue{};              // 呈现队列，用于执行呈现命令。
+  VkPresentModeKHR present_mode{};      // 呈现模式，定义了交换链如何处理图像显示。
 
-  VkSwapchainKHR swapchain{};
-  VkFormat swapchain_image_format{};
-  uint32_t swapchain_image_count{};
-  std::vector<VkImage> swapchain_images;
-  std::vector<VkImageView> swapchain_image_views;
+  VkSwapchainKHR swapchain{};                      // 交换链，管理用于呈现的图像队列。
+  VkFormat swapchain_image_format{};               // 交换链图像格式，定义交换链图像的颜色格式。
+  uint32_t swapchain_image_count{};                // 交换链图像的数量。
+  std::vector<VkImage> swapchain_images;           // 交换链中的图像列表。
+  std::vector<VkImageView> swapchain_image_views;  // 交换链图像视图列表，用于描述如何访问图像。
 
-  VkCommandPool command_pool{};
-  std::vector<VkCommandBuffer> command_buffers;
+  VkCommandPool command_pool{};                  // 命令池，用于分配命令缓冲区。
+  std::vector<VkCommandBuffer> command_buffers;  // 命令缓冲区列表，用于记录和提交绘图命令。
 
-  VkFence in_flight_fence;
-  VkSemaphore image_available_semaphore;
-  VkSemaphore render_finished_semaphore;
+  VkFence in_flight_fence;                // 用于同步的栅栏，确保GPU完成当前帧的渲染。
+  VkSemaphore image_available_semaphore;  // 信号量，表示图像已可用并且可以开始渲染。
+  VkSemaphore render_finished_semaphore;  // 信号量，表示渲染已完成并且可以进行呈现。
 };
 
 class Gpu {
