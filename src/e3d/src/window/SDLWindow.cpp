@@ -1,7 +1,6 @@
-#include "SDLModule.h"
-namespace e3d {
+#include "SDLWindow.h"
 
-SDLModule::SDLModule(const std::string& title, uint32_t width, uint32_t height) {
+SDLWindow::SDLWindow(const std::string& title, uint32_t width, uint32_t height) : window_(nullptr), should_close_(false) {
   // 初始化 SDL 库，启用视频、定时器和游戏控制器子系统
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
     throw std::runtime_error("SDL_Init failed, " + std::string(SDL_GetError()));
@@ -18,21 +17,28 @@ SDLModule::SDLModule(const std::string& title, uint32_t width, uint32_t height) 
 
   // 检查窗口是否创建成功，如果失败则抛出异常
   if (!window) {
+    SDL_Quit();
     throw std::runtime_error("SDL_CreateWindow failed, " + std::string(SDL_GetError()));
   }
 
-  // 保存创建的窗口指针到类成员变量 sdl_window 中
-  sdl_window = window;
+  // 保存创建的窗口指针到类成员变量 window_ 中
+  window_ = window;
 }
 
-SDLModule::~SDLModule() {
-  if (sdl_window) {
-    SDL_DestroyWindow(sdl_window);
+SDLWindow::~SDLWindow() {}
+
+bool SDLWindow::pollEvent() {
+  while (SDL_PollEvent(&event_)) {
+    if (event_.type == SDL_QUIT) {
+      should_close_ = true;
+    } else if (event_.type == SDL_WINDOWEVENT && event_.window.event == SDL_WINDOWEVENT_CLOSE) {
+      should_close_ = true;
+    }
   }
-  SDL_Quit();
+
+  return !should_close_;
 }
 
-SDL_Window* SDLModule::getWindow() const {
-  return sdl_window;
-}
-}  // namespace e3d
+std::shared_ptr<IWindow> createWindow(const std::string& title, uint32_t width, uint32_t height) {
+  return std::make_shared<SDLWindow>(title, width, height);
+};
